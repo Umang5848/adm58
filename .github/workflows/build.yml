@@ -24,9 +24,9 @@ jobs:
         with:
           path: user_keymap_repo
 
+      # ✅ Portable lowercase conversion step
       - name: Set lowercase username
-        id: lowercase
-        run: echo "LOWERCASE_USER=${GITHUB_ACTOR,,}" >> $GITHUB_ENV
+        run: echo "LOWERCASE_USER=$(echo $GITHUB_ACTOR | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Copy Files to QMK User Directory (LOWERCASE PATH)
         run: |
