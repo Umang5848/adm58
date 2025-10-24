@@ -6,6 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli
+    
+    # Set the QMK_KEYBOARD environment variable for use in the compile command
+    env:
+      QMK_KEYBOARD: users/${{ github.actor }}/adm58
+
     strategy:
       matrix:
         keyboard_folder:
@@ -18,25 +23,23 @@ jobs:
           repository: qmk/qmk_firmware
           submodules: recursive
 
-      - name: Checkout userspace (Your Repo)
+      # FIX 1: Checkout the user's repository (your keymap) to a simple temporary folder.
+      - name: Checkout User Keymap Files
         uses: actions/checkout@v4
         with:
-          # Checks out your repository content into: qmk_firmware/users/Umang5848
-          path: users/${{ github.actor }} 
+          path: user_keymap_repo 
 
-      # FIX 1: Define a lowercase environment variable (where the filter is allowed)
-      - name: Set Lowercase Username
-        run: echo "LOWERCASE_ACTOR=${{ github.actor | lower }}" >> $GITHUB_ENV
-
-      # FIX 2: Create Symlink Fix for Case Sensitivity
-      # This links the mixed-case folder to a lowercase path to handle QMK's internal search.
-      - name: Create Symlink Fix for Case Sensitivity
+      # FIX 2: Manually copy the files into the correct QMK structure,
+      # bypassing the GitHub case-sensitivity issue entirely.
+      - name: Copy Files to QMK User Directory
         run: |
-          ln -s users/${{ github.actor }} users/${{ env.LOWERCASE_ACTOR }}
+          mkdir -p users/${{ github.actor }}/adm58
+          cp -r user_keymap_repo/adm58/* users/${{ github.actor }}/adm58/
 
       - name: Build firmware with VIAL
-        # We use the mixed case in the compile command, relying on the symlink to resolve the path.
-        run: qmk compile -kb ${{ github.actor }}/${{ matrix.keyboard_folder }} -km vial
+        # The -kb argument is now a direct path based on the copy command, 
+        # using the correct mixed case from ${{ github.actor }}.
+        run: qmk compile -kb users/${{ github.actor }}/adm58 -km vial
 
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
