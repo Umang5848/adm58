@@ -32,8 +32,16 @@ jobs:
           mkdir -p users/${LOWERCASE_USER}/adm58
           cp -r user_keymap_repo/adm58/* users/${LOWERCASE_USER}/adm58/
 
-      # ✅ Fix: use correct keyboard name
-      - name: Build firmware with VIAL (LOWERCASE PATH)
+      # 🧠 Add a debug step (optional but recommended)
+      - name: Verify file structure
+        run: |
+          echo "Verifying file paths..."
+          ls -R users/${LOWERCASE_USER}/adm58 || true
+          echo "----"
+          ls -R keyboards/adm58 || true
+
+      # ✅ Correct keyboard name (not user folder)
+      - name: Build firmware with VIAL
         run: qmk compile -kb adm58 -km vial
 
       - name: Archive firmware artifact
