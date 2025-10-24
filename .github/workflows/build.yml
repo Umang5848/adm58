@@ -24,8 +24,8 @@ jobs:
           path: users/Umang5848
 
       - name: Build firmware with VIAL
-        run: qmk compile -kb umang5848/${{ matrix.keyboard_folder }} -km vial
-
+        run: qmk compile -kb ${{ github.actor }}/${{ matrix.keyboard_folder }} -km vial
+        
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
         with:
