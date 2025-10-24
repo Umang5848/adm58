@@ -6,15 +6,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli
-    
-    # CRITICAL FIX 1: 'env' block MUST be here to define the variable correctly.
-    env:
-      LOWERCASE_USER: ${{ toLower(github.actor) }}
 
     strategy:
       matrix:
         keyboard_folder:
-          - adm58 
+          - adm58
 
     steps:
       - name: Checkout QMK Firmware
@@ -26,18 +22,19 @@ jobs:
       - name: Checkout User Keymap Files
         uses: actions/checkout@v4
         with:
-          path: user_keymap_repo 
+          path: user_keymap_repo
+
+      - name: Set lowercase username
+        id: lowercase
+        run: echo "LOWERCASE_USER=${GITHUB_ACTOR,,}" >> $GITHUB_ENV
 
       - name: Copy Files to QMK User Directory (LOWERCASE PATH)
         run: |
-          # CRITICAL FIX 2: Create the target directory using the guaranteed lowercase path.
-          mkdir -p users/${{ env.LOWERCASE_USER }}/adm58
-          # Copy your files into the newly created lowercase folder
-          cp -r user_keymap_repo/adm58/* users/${{ env.LOWERCASE_USER }}/adm58/
+          mkdir -p users/${LOWERCASE_USER}/adm58
+          cp -r user_keymap_repo/adm58/* users/${LOWERCASE_USER}/adm58/
 
       - name: Build firmware with VIAL (LOWERCASE PATH)
-        # CRITICAL FIX 3: The -kb argument uses the lowercase path to match the directory created above.
-        run: qmk compile -kb ${{ env.LOWERCASE_USER }}/adm58 -km vial
+        run: qmk compile -kb ${LOWERCASE_USER}/adm58 -km vial
 
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
