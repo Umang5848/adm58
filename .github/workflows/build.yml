@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli
     
-    # Define a variable for the lowercase username, which is safest for Linux paths
+    # CRITICAL FIX 1: The 'env' block MUST be here to define the variable correctly.
     env:
       LOWERCASE_USER: ${{ github.actor | lower }}
 
@@ -31,13 +31,13 @@ jobs:
 
       - name: Copy Files to QMK User Directory (LOWERCASE PATH)
         run: |
-          # CRITICAL FIX: The target directory is FORCED to lowercase
+          # CRITICAL FIX 2: Create the target directory using the guaranteed lowercase path.
           mkdir -p users/${{ env.LOWERCASE_USER }}/adm58
-          # Copy your files into the newly created lowercase folder
+          # Copy your files into the newly created lowercase folder.
           cp -r user_keymap_repo/adm58/* users/${{ env.LOWERCASE_USER }}/adm58/
 
       - name: Build firmware with VIAL (LOWERCASE PATH)
-        # CRITICAL FIX: The -kb argument is also FORCED to lowercase to match the folder structure
+        # CRITICAL FIX 3: Use the lowercase path in the compile command to match the directory created above.
         run: qmk compile -kb ${{ env.LOWERCASE_USER }}/adm58 -km vial
 
       - name: Archive firmware artifact
