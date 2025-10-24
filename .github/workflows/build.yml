@@ -24,7 +24,6 @@ jobs:
         with:
           path: user_keymap_repo
 
-      # ✅ Portable lowercase conversion step
       - name: Set lowercase username
         run: echo "LOWERCASE_USER=$(echo $GITHUB_ACTOR | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
@@ -33,8 +32,9 @@ jobs:
           mkdir -p users/${LOWERCASE_USER}/adm58
           cp -r user_keymap_repo/adm58/* users/${LOWERCASE_USER}/adm58/
 
+      # ✅ Fix: use correct keyboard name
       - name: Build firmware with VIAL (LOWERCASE PATH)
-        run: qmk compile -kb ${LOWERCASE_USER}/adm58 -km vial
+        run: qmk compile -kb adm58 -km vial
 
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
