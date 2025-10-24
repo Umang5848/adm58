@@ -7,10 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli
     
-    # Set the QMK_KEYBOARD environment variable for use in the compile command
-    env:
-      QMK_KEYBOARD: users/${{ github.actor }}/adm58
-
     strategy:
       matrix:
         keyboard_folder:
@@ -23,23 +19,23 @@ jobs:
           repository: qmk/qmk_firmware
           submodules: recursive
 
-      # FIX 1: Checkout the user's repository (your keymap) to a simple temporary folder.
       - name: Checkout User Keymap Files
         uses: actions/checkout@v4
         with:
+          # Checks out your repository to a temporary folder
           path: user_keymap_repo 
 
-      # FIX 2: Manually copy the files into the correct QMK structure,
-      # bypassing the GitHub case-sensitivity issue entirely.
       - name: Copy Files to QMK User Directory
         run: |
+          # Create the final user directory inside QMK's 'users' folder
           mkdir -p users/${{ github.actor }}/adm58
+          # Copy all files from your repo into that final user directory
           cp -r user_keymap_repo/adm58/* users/${{ github.actor }}/adm58/
 
       - name: Build firmware with VIAL
-        # The -kb argument is now a direct path based on the copy command, 
-        # using the correct mixed case from ${{ github.actor }}.
-        run: qmk compile -kb users/${{ github.actor }}/adm58 -km vial
+        # CRITICAL FIX: The -kb argument is simplified to only include the USER/KEYBOARD name
+        # We rely on QMK's internal logic to resolve this path correctly within the 'users' directory.
+        run: qmk compile -kb ${{ github.actor }}/adm58 -km vial
 
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
