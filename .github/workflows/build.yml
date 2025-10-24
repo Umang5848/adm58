@@ -1,4 +1,4 @@
-name: Build Firmware
+name: Build Custom Firmware
 
 on: [push, workflow_dispatch]
 
@@ -7,11 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/qmk/qmk_cli
 
-    strategy:
-      matrix:
-        keyboard_folder:
-          - adm58
-
     steps:
       - name: Checkout QMK Firmware
         uses: actions/checkout@v4
@@ -19,7 +14,7 @@ jobs:
           repository: qmk/qmk_firmware
           submodules: recursive
 
-      - name: Checkout User Keymap Files
+      - name: Checkout Your Custom Keyboard Repo
         uses: actions/checkout@v4
         with:
           path: user_keymap_repo
@@ -27,27 +22,23 @@ jobs:
       - name: Set lowercase username
         run: echo "LOWERCASE_USER=$(echo $GITHUB_ACTOR | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Copy Files to QMK User Directory (LOWERCASE PATH)
+      # 🧩 Copy your custom keyboard into QMK’s keyboards directory
+      - name: Copy Custom Keyboard to QMK
         run: |
-          mkdir -p users/${LOWERCASE_USER}/adm58
-          cp -r user_keymap_repo/adm58/* users/${LOWERCASE_USER}/adm58/
+          echo "Copying custom keyboard to QMK..."
+          cp -r user_keymap_repo/adm58 keyboards/
 
-      # 🧠 Add a debug step (optional but recommended)
-      - name: Verify file structure
-        run: |
-          echo "Verifying file paths..."
-          ls -R users/${LOWERCASE_USER}/adm58 || true
-          echo "----"
-          ls -R keyboards/adm58 || true
+          echo "Verifying structure..."
+          ls -R keyboards/adm58
 
-      # ✅ Correct keyboard name (not user folder)
+      # ✅ Build the custom keyboard (vial keymap)
       - name: Build firmware with VIAL
         run: qmk compile -kb adm58 -km vial
 
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ matrix.keyboard_folder }}-${{ github.actor }}
+          name: firmware-adm58-${{ github.actor }}
           path: |
             *.uf2
             *.bin
