@@ -9,7 +9,7 @@ jobs:
     
     # CRITICAL FIX 1: 'env' block MUST be here to define the variable correctly.
     env:
-      LOWERCASE_USER: ${{ github.actor | lower }}
+      LOWERCASE_USER: ${{ toLower(github.actor) }}
 
     strategy:
       matrix:
