@@ -21,15 +21,21 @@ jobs:
       - name: Checkout userspace (Your Repo)
         uses: actions/checkout@v4
         with:
+          # Checks out your repository content into: qmk_firmware/users/Umang5848
           path: users/${{ github.actor }} 
 
+      # FIX 1: Define a lowercase environment variable (where the filter is allowed)
+      - name: Set Lowercase Username
+        run: echo "LOWERCASE_ACTOR=${{ github.actor | lower }}" >> $GITHUB_ENV
+
+      # FIX 2: Create Symlink Fix for Case Sensitivity
+      # This links the mixed-case folder to a lowercase path to handle QMK's internal search.
       - name: Create Symlink Fix for Case Sensitivity
         run: |
-          # This creates a link so QMK can find the files regardless of case
-          ln -s users/${{ github.actor }} users/${{ github.actor | lower }}
+          ln -s users/${{ github.actor }} users/${{ env.LOWERCASE_ACTOR }}
 
       - name: Build firmware with VIAL
-        # We use the mixed case, but the symlink will catch any mis-casing by QMK
+        # We use the mixed case in the compile command, relying on the symlink to resolve the path.
         run: qmk compile -kb ${{ github.actor }}/${{ matrix.keyboard_folder }} -km vial
 
       - name: Archive firmware artifact
