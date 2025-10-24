@@ -21,15 +21,21 @@ jobs:
       - name: Checkout userspace (Your Repo)
         uses: actions/checkout@v4
         with:
-          path: users/Umang5848
+          path: users/${{ github.actor }} 
+
+      - name: Create Symlink Fix for Case Sensitivity
+        run: |
+          # This creates a link so QMK can find the files regardless of case
+          ln -s users/${{ github.actor }} users/${{ github.actor | lower }}
 
       - name: Build firmware with VIAL
+        # We use the mixed case, but the symlink will catch any mis-casing by QMK
         run: qmk compile -kb ${{ github.actor }}/${{ matrix.keyboard_folder }} -km vial
-        
+
       - name: Archive firmware artifact
         uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ matrix.keyboard_folder }}-umang5848
+          name: firmware-${{ matrix.keyboard_folder }}-${{ github.actor }}
           path: |
             *.uf2
             *.bin
