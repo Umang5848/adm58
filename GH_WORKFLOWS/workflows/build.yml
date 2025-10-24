@@ -1,0 +1,37 @@
+name: Build Firmware
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/qmk/qmk_cli
+    strategy:
+      matrix:
+        keyboard_folder:
+          - adm58 
+
+    steps:
+      - name: Checkout QMK Firmware
+        uses: actions/checkout@v4
+        with:
+          repository: qmk/qmk_firmware
+          submodules: recursive
+
+      - name: Checkout userspace (Your Repo)
+        uses: actions/checkout@v4
+        with:
+          path: users/Umang5848
+
+      - name: Build firmware with VIAL
+        run: qmk compile -kb umang5848/${{ matrix.keyboard_folder }} -km vial
+
+      - name: Archive firmware artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.keyboard_folder }}-umang5848
+          path: |
+            *.uf2
+            *.bin
+            *.hex
+          if-no-files-found: error
